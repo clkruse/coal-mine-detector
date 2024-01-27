@@ -34,6 +34,7 @@ class S2_Data_Extractor:
         self.completed_tasks = 0
         self.predictions = gpd.GeoDataFrame()
         self.evaluated_boundaries = gpd.GeoDataFrame()
+        self.failed_tiles = []
 
         ee.Initialize(
             opt_url="https://earthengine-highvolume.googleapis.com",
@@ -107,6 +108,7 @@ class S2_Data_Extractor:
             
         except Exception as e:
             print(f"Error in get_tile_data for tile {tile}: {e}")
+            self.failed_tiles.append(tile)
             return None, None
         
         pixels = np.array(utils.pad_patch(pixels, tile_info.tilesize))
@@ -123,6 +125,7 @@ class S2_Data_Extractor:
             preds = model.predict(chips, verbose=0)
         except Exception as e:
             print(f"Error in model.predict for tile {tile_info}: {e}")
+            self.failed_tiles.append(tile_info)
             return None, tile_info
             
         pred_idx = np.where(preds > pred_threshold)[0]
@@ -156,11 +159,11 @@ class S2_Data_Extractor:
                     tile_data.append(tile)
         return chips, tile_data
 
-    def make_predictions(self, model, pred_threshold=0.5, batch_size=500):
+    def make_predictions(self, models, pred_threshold=0.5, batch_size=500):
         """
         Predict on the data for the tiles.
         Inputs:
-            - model: a keras model
+            - models: a list of keras models
             - batch_size: the number of tiles to process in each batch (default: 500)
         Outputs:
             - predictions: a gdf of predictions and geoms
@@ -171,7 +174,7 @@ class S2_Data_Extractor:
                 batch_tiles = self.tiles[i : i + self.batch_size]
                 futures = [
                     executor.submit(
-                        self.predict_on_tile, tile, model, pred_threshold)
+                        self.predict_on_tile, tile, models, pred_threshold)
                     for tile in batch_tiles
                 ]
 
