@@ -1,0 +1,28 @@
+Input Data:
+	random_land_clay_centroids_2023-01-01_2023-12-31_patch_arrays.pkl
+	active_surface_mines_2023-01-01_2023-12-31_patch_arrays.pkl
+
+
+Augmentation Parameters:
+	featurewise_center: False
+	rotation_range: 360
+	width_shift_range: [0.9, 1.1]
+	height_shift_range: [0.9, 1.1]
+	shear_range: 10
+	zoom_range: [0.9, 1.1]
+	vertical_flip: True
+	horizontal_flip: True
+	fill_mode: reflect
+
+Batch Size: 32
+Training Epochs: 64
+
+Classification Report at 0.8
+              precision    recall  f1-score   support
+
+     No Mine       0.74      0.97      0.84       457
+        Mine       0.95      0.65      0.77       448
+
+    accuracy                           0.81       905
+   macro avg       0.85      0.81      0.81       905
+weighted avg       0.85      0.81      0.81       905
